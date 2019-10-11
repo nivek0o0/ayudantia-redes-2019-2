@@ -1,20 +1,18 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include "comunication.h"
 #include "conection.h"
 
 char * revert(char * message){
-  int len = strlen(message);
+  int len = strlen(message) + 1;
   char * response = malloc(len);
   
-  for (int i = 0; i < len; i++)
+  for (int i = 0; i < len-1; i++)
   {
-    response[i] = message[len-1-i];
+    response[i] = message[len-2-i];
   }
   response[len-1] = '\0';
-
   return response;
 }
 
@@ -41,7 +39,7 @@ int main(int argc, char *argv[]){
     if (msg_code == 1) //El cliente me envió un mensaje a mi (servidor)
     {
       char * client_message = server_receive_payload(sockets_array[my_attention]);
-      printf("El cliente dice: %s\n", client_message);
+      printf("El cliente %d dice: %s\n", my_attention+1, client_message);
       
       // Le enviaremos el mismo mensaje invertido jeje
       char * response = revert(client_message);
@@ -56,9 +54,9 @@ int main(int argc, char *argv[]){
       // Mi atención cambia al otro socket
       my_attention = (my_attention + 1) % 2;
       
-      server_send_message(sockets_array[my_attention], 2, client_message);
-      
+      server_send_message(sockets_array[my_attention], 2, client_message); 
     }
+    printf("------------------\n");
   }
 
   return 0;

@@ -58,6 +58,7 @@ int main (int argc, char *argv[]){
 
       client_send_message(server_socket, option, response);
     }
+    printf("------------------\n");
   }
 
   // Se cierra el socket
