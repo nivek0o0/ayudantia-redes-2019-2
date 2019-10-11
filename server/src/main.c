@@ -5,33 +5,53 @@
 #include "comunication.h"
 #include "conection.h"
 
-int main (int argc, char *argv[]){
+char * revert(char * message){
+  int len = strlen(message);
+  char * response = malloc(len);
+  
+  for (int i = 0; i < len; i++)
+  {
+    printf("char: %c\n", message[len-1-i]);
+    response[i] = message[len-1-i];
+  }
+  response[len-1] = '\0';
+
+  return response;
+}
+
+int main(int argc, char *argv[])
   // Se define una IP y un puerto
-  char * IP = "0.0.0.0";
+  char *IP = "0.0.0.0";
   int PORT = 8080;
 
-  // Se crea el servidor y se obtiene al cliente
-  int client_socket = prepare_sockets_and_get_clients(IP, PORT);
-  
-  // Le enviamos al cliente un mensaje de bienvenida
-  char * welcome = "Bienvenido!!";
-  server_send_message(client_socket, welcome);
+  // Se crea el servidor y se obtienen los sockets de ambos clientes
+  PlayersInfo * players_info = prepare_sockets_and_get_clients(IP, PORT);
 
-  while (1){
-    // Se obtiene el paquete del cliente
-    int msg_code = server_receive_id(client_socket);
+  // Le enviamos al primer cliente un mensaje de bienvenida
+  char * welcome = "Bienvenido Cliente 1!!";
+  server_send_message(players_info->socket_c1, 1, welcome);
+
+  while (1)
+  {
+    // Se obtiene el paquete del cliente 1
+    int msg_code = server_receive_id(players_info->socket_c1);
     printf("msgcode:%d\n", msg_code);
 
-    if (msg_code == 3){
-      char * client_message = server_receive_payload(client_socket);
+    if (msg_code == 1) //El cliente me envió un mensaje a mi (servidor)
+    {
+      char * client_message = server_receive_payload(players_info->socket_c1);
       printf("El cliente dice: %s\n", client_message);
-      // Damos vuelta el mensaje y lo enviamos de vuelta
-      int len = strlen(client_message);
-      char response[len];
-      for (int i=1; i<=len; i++){
-        response[len-i] = client_message[i-1];
-      }
-      server_send_message(client_socket, response);
+      
+      // Le enviaremos el mismo mensaje invertido jeje
+      char * response = revert(client_message);
+      
+      // Le enviamos la respuesta
+      server_send_message(players_info->socket_c1, 1, response);
+    }
+    else if (msg_code == 2){ //El cliente le envía un mensaje al otro cliente
+      char * client_message = server_receive_payload(players_info->socket_c1);
+      printf("Servidor traspasando el mensaje: %s\n", client_message);
+      server_send_message(players_info->socket_c2, 2, client_message);
     }
   }
 

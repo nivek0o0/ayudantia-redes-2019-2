@@ -9,7 +9,7 @@ int server_receive_id(int client_socket){
 
 char * server_receive_payload(int client_socket){
   // Se obtiene el largo del payload
-  int len;
+  int len = 0;
   recv(client_socket, &len, 1, 0);
   // Se obtiene el payload
   char * payload = malloc(len);
@@ -18,11 +18,12 @@ char * server_receive_payload(int client_socket){
   return payload;
 }
 
-void server_send_message(int client_socket, char * message){
-  int payloadSize = strlen(message);
+void server_send_message(int client_socket, int pkg_id, char * message){
+  int payloadSize = strlen(message) + 1;
+  printf("payload size: %d\n", payloadSize);
   // Se arma el paquete
   char msg[1+1+payloadSize];
-  msg[0] = 1;
+  msg[0] = pkg_id;
   msg[1] = payloadSize;
   memcpy(&msg[2], message, payloadSize);
   // Se envía el paquete
